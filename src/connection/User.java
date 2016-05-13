@@ -5,23 +5,26 @@ import java.net.*;
 import messages.*;
 
 public class User extends Thread {
-	
+
 	/** connections */
 	private Socket socket;
 	private ObjectInputStream input;
 	private ObjectOutputStream output;
 	private Server server;
-		
-	/** user that is currently logged in for this session ("" means that currently no user is logged in for this session) */
+
+	/**
+	 * user that is currently logged in for this session ("" means that
+	 * currently no user is logged in for this session)
+	 */
 	private String username;
-	
+
 	/** flag for controlling the loop of this thread */
 	private boolean running;
-	
-	public String getUsername(){
+
+	public String getUsername() {
 		return this.username;
 	}
-	
+
 	User(Socket socket, Server svr) {
 		this.server = svr;
 		this.socket = socket;
@@ -29,7 +32,7 @@ public class User extends Thread {
 		this.running = true;
 		this.connect();
 	}
-	
+
 	private void connect() {
 		try {
 			this.input = new ObjectInputStream(this.socket.getInputStream());
@@ -38,9 +41,8 @@ public class User extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
-	
-	/** 
+
+	/**
 	 * closes all connections with the client
 	 */
 	private void disconnect() {
@@ -48,12 +50,13 @@ public class User extends Thread {
 			this.output.close();
 			this.input.close();
 			this.socket.close();
+			server.getLobby().removeUser(this);
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
-	
-	public void send(Message m){
+
+	public void send(Message m) {
 		try {
 			output.writeObject(m);
 			output.flush();
@@ -61,32 +64,41 @@ public class User extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
-	public void run(){
-		while(running){
+
+	public void run() {
+		while (running) {
 			try {
-				Message m = (Message)input.readObject();
-				switch(m.getType()){
+				Thread.sleep(200);
+				Message m = (Message) input.readObject();
+				
+				switch (m.getType()) {
+				case QUIT:
+					this.running = false;
+					disconnect();
+					System.out.println("Quit");
+					break;
+
 				case LOGIN:
 					MessageLOGIN ml = (MessageLOGIN) m;
-					if(server.getLobby().existsUser(ml.getName())){
+					if (server.getLobby().existsUser(ml.getName())) {
 						send(new MessageLOGIN_ERROR(ml.getName()));
-					}else{
+					} else {
 						server.getLobby().addUser(this);
-						//send(new MessageLOBBY(server.getLobby().getUsers()));
+						send(new Message(MessageType.LOGIN));
 					}
 					break;
-				case QUIT:
-					disconnect();
-					this.running = false;
-					break;
+				
 				default:
 					break;
 				}
-				//TODO Stuff				
-				}catch (ClassNotFoundException | IOException e) {
+				// TODO Stuff
+			} catch (ClassNotFoundException | IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
+
 	}
 }
