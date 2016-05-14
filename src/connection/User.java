@@ -10,21 +10,16 @@ import messages.*;
 
 public class User extends Thread {
 
-	/** connections */
 	private Socket socket;
 	private ObjectInputStream input;
 	private ObjectOutputStream output;
 	private Server server;
-
-	/**
-	 * user that is currently logged in for this session ("" means that
-	 * currently no user is logged in for this session)
-	 */
+	
 	private String username;
 	private Match match;
 	private ArrayList<Card> cards = new ArrayList<Card>();
-
-	/** flag for controlling the loop of this thread */
+	private int bid = -1, bidcount = 0;
+	
 	private boolean running = true, ready=false;
 
 	public String getUsername() {
@@ -37,6 +32,14 @@ public class User extends Thread {
 	
 	public boolean isReady(){
 		return ready;
+	}
+	
+	public ArrayList<Card> getCards() {
+		return cards;
+	}
+
+	public void setCards(ArrayList<Card> cards) {
+		this.cards = cards;
 	}
 
 	User(Socket socket, Server svr) {
@@ -56,9 +59,6 @@ public class User extends Thread {
 		}
 	}
 
-	/**
-	 * closes all connections with the client
-	 */
 	private void disconnect() {
 		try {
 			this.output.close();
@@ -82,23 +82,11 @@ public class User extends Thread {
 	public void drawCard(){
 		cards.add(match.getBoard().drawCard());
 	}
-	
-	
-
-	public ArrayList<Card> getCards() {
-		return cards;
-	}
-
-	public void setCards(ArrayList<Card> cards) {
-		this.cards = cards;
-	}
 
 	public void run() {
 		while (running) {
 			try {
-				Thread.sleep(200);
 				Message m = (Message) input.readObject();
-				
 				switch (m.getType()) {
 				case QUIT:
 					this.running = false;
@@ -114,16 +102,19 @@ public class User extends Thread {
 						this.username = ml.getName();
 						server.getLobby().addUser(this);
 						send(new Message(MessageType.LOGIN));
+						server.getLobby().generateMatch();
 					}
 					break;
-				case READY:
-					ready = !ready;
+				case BID:
+					match.broadcast(m);
+					break;
+				case CARDPLAYED:
+					match.broadcast(m);
+					break;
 				default:
 					break;
 				}
 			} catch (ClassNotFoundException | IOException e) {
-				e.printStackTrace();
-			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}

@@ -1,6 +1,7 @@
 package controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import connection.User;
 import domain.Card;
@@ -11,6 +12,7 @@ public class Match {
 	private ArrayList<User> users;
 	private int currentRound = 0;
 	private PlayBoard playboard;
+	private HashMap<User,Card> roundCards;
 	
 	public Match(){
 		users = new ArrayList<User>();
@@ -40,8 +42,18 @@ public class Match {
 			}
 		}
 		for(User u: users){
-			u.send(new MessageCARDSLIST(u.getCards()));
+			u.send(new MessageHANDCARDS(u.getCards()));
 		}
 	}
 	
+	public void addplayedCard(User u, Card c){
+		roundCards.put(u, c);
+	}
+	
+	public void broadcast(Message m){
+		for(User u:users){
+			u.send(m);
+		}
+	}
+		
 }
