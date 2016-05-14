@@ -2,6 +2,10 @@ package connection;
 
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
+
+import controller.Match;
+import domain.Card;
 import messages.*;
 
 public class User extends Thread {
@@ -17,12 +21,22 @@ public class User extends Thread {
 	 * currently no user is logged in for this session)
 	 */
 	private String username;
+	private Match match;
+	private ArrayList<Card> cards = new ArrayList<Card>();
 
 	/** flag for controlling the loop of this thread */
-	private boolean running;
+	private boolean running = true, ready=false;
 
 	public String getUsername() {
 		return this.username;
+	}
+	
+	public Match getMatch(){
+		return this.match;
+	}
+	
+	public boolean isReady(){
+		return ready;
 	}
 
 	User(Socket socket, Server svr) {
@@ -64,6 +78,20 @@ public class User extends Thread {
 			e.printStackTrace();
 		}
 	}
+	
+	public void drawCard(){
+		cards.add(match.getBoard().drawCard());
+	}
+	
+	
+
+	public ArrayList<Card> getCards() {
+		return cards;
+	}
+
+	public void setCards(ArrayList<Card> cards) {
+		this.cards = cards;
+	}
 
 	public void run() {
 		while (running) {
@@ -83,22 +111,26 @@ public class User extends Thread {
 					if (server.getLobby().existsUser(ml.getName())) {
 						send(new MessageLOGIN_ERROR(ml.getName()));
 					} else {
+						this.username = ml.getName();
 						server.getLobby().addUser(this);
 						send(new Message(MessageType.LOGIN));
 					}
 					break;
-				
+				case READY:
+					ready = !ready;
 				default:
 					break;
 				}
-				// TODO Stuff
 			} catch (ClassNotFoundException | IOException e) {
 				e.printStackTrace();
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 
+	}
+	
+	public String toString(){
+		return this.username;
 	}
 }
