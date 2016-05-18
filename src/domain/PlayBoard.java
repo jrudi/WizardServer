@@ -47,6 +47,15 @@ public class PlayBoard {
 			throw new NoCardsLeftException();
 		}
 	}
+	
+	public CardColor getTrump(){
+		try{
+			return drawCard().getColor();			
+		}catch(NoCardsLeftException e){
+			return CardColor.FOOL;
+		}
+		
+	}
 
 	public static void main(String[] args) {
 		PlayBoard pb = new PlayBoard();

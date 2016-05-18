@@ -1,7 +1,8 @@
 package messages;
 
 public class MessageBID extends Message{
-	
+	private static final long serialVersionUID = 1L;
+
 	private int bid;
 	private String username;
 	

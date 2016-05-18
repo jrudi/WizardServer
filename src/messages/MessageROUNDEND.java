@@ -3,7 +3,8 @@ package messages;
 import java.util.ArrayList;
 
 public class MessageROUNDEND extends Message{
-	
+	private static final long serialVersionUID = 1L;
+
 	private int round;
 	private ArrayList<String> scores;
 	public MessageROUNDEND(int newRound, ArrayList<String> setScores){

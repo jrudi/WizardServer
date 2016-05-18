@@ -93,7 +93,6 @@ public class User extends Thread {
 					disconnect();
 					System.out.println("Quit");
 					break;
-
 				case LOGIN:
 					MessageLOGIN ml = (MessageLOGIN) m;
 					if (server.getLobby().existsUser(ml.getName())) {
@@ -102,7 +101,7 @@ public class User extends Thread {
 						this.username = ml.getName();
 						server.getLobby().addUser(this);
 						send(new Message(MessageType.LOGIN));
-						server.getLobby().generateMatch();
+						//server.getLobby().generateMatch();
 					}
 					break;
 				case BID:
@@ -110,6 +109,10 @@ public class User extends Thread {
 					break;
 				case CARDPLAYED:
 					match.broadcast(m);
+					break;
+				case READY:
+					ready = ((MessageREADY) m).isReady();
+					match.allReady();
 					break;
 				default:
 					break;
@@ -119,6 +122,15 @@ public class User extends Thread {
 			}
 		}
 
+	}
+	
+	public int wonTrick(){
+		bidcount++;
+		return bidcount;
+	}
+	
+	public int getBid(){
+		return bid;
 	}
 	
 	public String toString(){

@@ -1,6 +1,8 @@
 package messages;
 
 public class MessageLOGIN_ERROR extends Message{
+	private static final long serialVersionUID = 1L;
+
 	private String msg;
 	
 	public MessageLOGIN_ERROR(String error){

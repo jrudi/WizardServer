@@ -1,6 +1,7 @@
 package messages;
 
 public class MessageLOGIN extends Message{
+	private static final long serialVersionUID = 1L;
 
 	private String username;
 	
